@@ -38,7 +38,7 @@
 #include <ESP8266WiFi.h>
 
 // replace with your channel’s thingspeak API key,
-String apiKey = "Y3RIFU93Q3H3EBE4";
+String apiKey = "JP02XP9I0250VGPW  ";
 const char* ssid = "LOL";
 const char* password = "wunnahtun";
 
@@ -50,7 +50,7 @@ WiFiClient client;
 
 constexpr uint8_t RST_PIN = 5;          // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = 4;         // Configurable, see typical pin layout above
-int a=0,b=0,c=0,d=0,temp=0;
+int a=0,b=0,c=0,d=0,temp=0,cardcount=0;
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 void setup() {
@@ -85,6 +85,13 @@ void loop() {
       Serial.println(m);
       temp=m;
     }
+
+    if(m==1 || m==15 || m==30 || m==45)
+    {
+      cardcount=0;
+    }
+
+    
 // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent()) 
   {
@@ -112,18 +119,24 @@ void loop() {
   if (content.substring(1) == "DD DD 3E D5") //change UID of the card that you want to give access
   {
     Serial.println(" Access Granted ");
-    if(m>0&&15>m){
+    Serial.println(cardcount);
+    Serial.println(m);
+    if(m>=0&&15>m&&cardcount==0){
       a=a+1;
+      cardcount=cardcount+1;
     }
 
-    if(m>15 && 30>m){
+    if(m>=15 && 30>m && cardcount==0){
       b=b+1;
+       cardcount=cardcount+1;
     }
-   if(m>30 && 45>m){
+   if(m>=30 && 45>m&& cardcount==0){
       c=c+1;
+      cardcount=cardcount+1;
     }
-   if(m>45 && 59>m){
+   if(m>=45 && 59>m&& cardcount==0){
       d=d+1;
+      cardcount=cardcount+1;
     }
 
 
@@ -137,13 +150,13 @@ void loop() {
   if (client.connect(server,80)) { // "184.106.153.149" or api.thingspeak.com
 String postStr = apiKey;
 postStr +="&field1=";
-postStr += String(4);
+postStr += String(a);
 postStr +="&field2=";
-postStr += String(4);
+postStr += String(b);
 postStr +="&field3=";
-postStr += String(4);
+postStr += String(c);
 postStr +="&field4=";
-postStr += String(4);
+postStr += String(d);
 postStr += "\r\n\r\n";
 
 client.print("POST /update HTTP/1.1\n");
@@ -164,7 +177,7 @@ Serial.print("c: ");
 Serial.print(c);
 Serial.print(" d: ");
 Serial.print(d);
-Serial.println("% send to Thingspeak");
+//Serial.println("% send to Thingspeak");
 }
 client.stop();
 
